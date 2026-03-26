@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Code, File, Sparkle, ClipboardText } from "@phosphor-icons/react";
+import { Code, File, Sparkle, ClipboardText, Cube } from "@phosphor-icons/react";
 
 export default function ByteConverter() {
   const MAX_BYTES = 10000;
@@ -21,16 +22,15 @@ export default function ByteConverter() {
   let textBytes: number[] = [];
   let textHexError = '';
 
-  if (text) {
-    if (inputMode === 'text') {
-      textBytes = textToBytes(text);
-    } else {
-      try {
-        textBytes = hexToBytes(text);
-      } catch (err) {
-        textHexError = (err as Error).message;
-        textBytes = [];
-      }
+  if (inputMode === 'text') {
+    textBytes = textToBytes(text);
+  } else { // inputMode === 'hex'
+    try {
+      textBytes = hexToBytes(text);
+      textHexError = '';
+    } catch (err) {
+      textHexError = (err as Error).message;
+      textBytes = [];
     }
   }
 
@@ -41,19 +41,24 @@ export default function ByteConverter() {
     setTimeout(() => setToast(null), 2200);
   };
 
-  // Convert Text to Bytes
   function textToBytes(str: string) {
     const encoder = new TextEncoder();
     return Array.from(encoder.encode(str));
   }
 
-  function hexToBytes(hexString: string) {
+  function hexToBytes(hexString: string): number[] {
     const sanitized = hexString
       .replace(/0x/g, '')
-      .replace(/[^A-Fa-f0-9]/g, '');
+      .replace(/\s/g, '');
 
+    if (sanitized.length === 0) {
+      return [];
+    }
     if (sanitized.length % 2 !== 0) {
       throw new Error('Invalid hex string length (must be even).');
+    }
+    if (!/^[0-9a-fA-F]*$/.test(sanitized)) {
+      throw new Error('Invalid characters in hex string.');
     }
 
     const bytes: number[] = [];
@@ -62,8 +67,28 @@ export default function ByteConverter() {
     }
     return bytes;
   }
+  
+  const bytesToCompactHex = (bytes: number[]): string => {
+    return bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
 
-  // Handle File Upload
+  const bytesToBinary = (bytes: number[]): string => {
+    if (bytes.length === 0) return '';
+    return bytes.map(b => b.toString(2).padStart(8, '0')).join(' ');
+  };
+
+  // New helper function for Unicode Decimal conversion
+  const bytesToUnicodeDecimals = (bytes: number[]): string => {
+    if (bytes.length === 0) return '';
+    try {
+        const text = new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(bytes));
+        return Array.from(text).map(char => char.codePointAt(0)!.toString()).join(' ');
+    } catch (e) {
+        return `[Invalid UTF-8 sequence for Unicode conversion: ${(e as Error).message}]`;
+    }
+  };
+
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -160,8 +185,31 @@ export default function ByteConverter() {
     showToast('All data cleared.', 'info');
   };
 
+  // --- Mode Switching Logic ---
+  const handleSetInputMode = (mode: 'text' | 'hex') => {
+    if (inputMode === mode) return; // No change needed
+
+    if (mode === 'hex') {
+      // Current mode is 'text', convert current text to hex
+      const bytes = textToBytes(text);
+      setText(bytesToCompactHex(bytes));
+    } else { // Switching to 'text' mode
+      // Current mode is 'hex', convert current hex to text
+      try {
+        const bytes = hexToBytes(text);
+        setText(bytesToText(bytes));
+      } catch (e: any) {
+        // If current hex input is invalid, clear it or show error
+        showToast(`Cannot convert invalid hex to text: ${e.message}`, 'error');
+        setText(''); // Clear invalid hex input
+      }
+    }
+    setInputMode(mode);
+  };
+
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-br from-cyan-50 via-slate-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+    <div className="flex flex-col items-center justify-center min-h-screen p-8">
       {toast && (
         <div className={`fixed top-6 z-50 rounded-lg px-4 py-2 text-sm font-semibold shadow-lg ${
           toast.type === 'success'
@@ -175,9 +223,15 @@ export default function ByteConverter() {
       )}
       <Card className="w-full max-w-2xl border border-sky-200/60 bg-white/95 dark:bg-slate-900/80 dark:border-sky-800 shadow-xl shadow-sky-300/20 animate__animated animate__fadeIn">
         <CardHeader className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-sky-600 dark:text-sky-300">
-            <Sparkle className="h-5 w-5" weight="fill" />
-            <CardTitle className="text-2xl">Byte Converter</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sky-600 dark:text-sky-300">
+              <Sparkle className="h-5 w-5" weight="fill" />
+              <CardTitle className="text-2xl">Byte Converter</CardTitle>
+            </div>
+            <Link href="/encoding-demo" className="flex items-center gap-1 text-sm text-sky-600 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-100 transition-colors">
+              <Cube className="h-4 w-4" weight="fill" />
+              Encoding Demo
+            </Link>
           </div>
           <CardDescription className="text-sm text-slate-600 dark:text-slate-300">
             Convert text or files into byte arrays instantly.
@@ -201,12 +255,12 @@ export default function ByteConverter() {
                 <span className="rounded-full bg-sky-100 text-sky-800 px-3 py-1 text-xs font-semibold dark:bg-sky-900/50 dark:text-sky-200">
                   Text bytes: {textBytes.length}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 animate__animated animate__fadeInUp animate__delay-1s">
                   <label className="text-xs">Input mode:</label>
-                  <button onClick={() => setInputMode('text')} className={`rounded px-2 py-1 text-xs ${inputMode === 'text' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
+                  <button onClick={() => handleSetInputMode('text')} className={`rounded px-2 py-1 text-xs ${inputMode === 'text' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
                     UTF-8
                   </button>
-                  <button onClick={() => setInputMode('hex')} className={`rounded px-2 py-1 text-xs ${inputMode === 'hex' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
+                  <button onClick={() => handleSetInputMode('hex')} className={`rounded px-2 py-1 text-xs ${inputMode === 'hex' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
                     Hex
                   </button>
                 </div>
@@ -232,28 +286,56 @@ export default function ByteConverter() {
                 </div>
               )}
 
-              <Textarea 
-                placeholder="Type something here..." 
+              <Textarea
+                placeholder={inputMode === 'hex' ? "Enter hex string (e.g., 48656c6c6f)" : "Type something here..."}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                className="min-h-[150px] border-sky-300 focus:border-sky-500 focus:ring-sky-300"
+                className="min-h-[150px] border-sky-300 focus:border-sky-500 focus:ring-sky-300 animate__animated animate__fadeInUp animate__delay-2s"
               />
 
-              <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md overflow-hidden">
+              {/* Unicode (Decimal) Output */}
+              <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md overflow-hidden animate__animated animate__fadeInUp animate__delay-3s">
                 <div className="flex items-center gap-2 mb-2 text-sky-700 dark:text-sky-200">
                   <ClipboardText className="h-4 w-4" />
-                  <span className="text-xs font-semibold">Byte output</span>
+                  <span className="text-xs font-semibold">Unicode (Decimal) Output</span>
                 </div>
                 <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
-                  {textBytes.length > 0 ? `${textBytes.slice(0, 500).join(', ')}${textBytes.length > 500 ? ' ... [truncated]' : ''}` : "Bytes will appear here..."}
+                  {bytesToUnicodeDecimals(textBytes)}
                 </p>
               </div>
-              {textBytes.length > 0 && (
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md">
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Decoded text (UTF-8)</p>
-                  <p className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all">{bytesToText(textBytes)}</p>
+
+              {/* Binary Output */}
+              <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden animate__animated animate__fadeInUp animate__delay-4s">
+                <div className="flex items-center gap-2 mb-2 text-slate-700 dark:text-slate-300">
+                  <ClipboardText className="h-4 w-4" />
+                  <span className="text-xs font-semibold">Binary Output</span>
                 </div>
-              )}
+                <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
+                  {bytesToBinary(textBytes)}
+                </p>
+              </div>
+
+              {/* Hexadecimal Output */}
+              <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-5s">
+                <div className="flex items-center gap-2 mb-2 text-sky-700 dark:text-sky-200">
+                  <ClipboardText className="h-4 w-4" />
+                  <span className="text-xs font-semibold">Hexadecimal Output</span>
+                </div>
+                <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
+                  {bytesToHex(textBytes)}
+                </p>
+              </div>
+
+              {/* UTF-8/ASCII Output */}
+              <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-6s">
+                <div className="flex items-center gap-2 mb-2 text-slate-700 dark:text-slate-300">
+                  <ClipboardText className="h-4 w-4" />
+                  <span className="text-xs font-semibold">UTF-8/ASCII Output</span>
+                </div>
+                <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
+                  {bytesToText(textBytes)}
+                </p>
+              </div>
             </TabsContent>
 
             <TabsContent value="file" className="space-y-4 py-4">
@@ -261,7 +343,7 @@ export default function ByteConverter() {
                 <span className="rounded-full bg-sky-100 text-sky-800 px-3 py-1 text-xs font-semibold dark:bg-sky-900/50 dark:text-sky-200">
                   File bytes: {fileBytes.length}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 animate__animated animate__fadeInUp animate__delay-1s">
                   <label className="text-xs">File mode:</label>
                   <button onClick={() => setFileMode('binary')} className={`rounded px-2 py-1 text-xs ${fileMode === 'binary' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
                     Binary
@@ -287,21 +369,21 @@ export default function ByteConverter() {
                 </div>
               )}
 
-              <Input type="file" onChange={handleFileChange} className="border-sky-300 focus:border-sky-500 focus:ring-sky-300" />
+              <Input type="file" onChange={handleFileChange} className="border-sky-300 focus:border-sky-500 focus:ring-sky-300 animate__animated animate__fadeInUp animate__delay-2s" />
 
               {fileName && (
-                <div className="space-y-2">
+                <div className="space-y-2 animate__animated animate__fadeInUp animate__delay-3s">
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     <File className="inline h-4 w-4 mr-1 text-sky-500" />
                     File: {fileName} ({fileBytes.length} bytes)
                   </p>
-                  <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md max-h-[200px] overflow-y-auto">
+                  <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md max-h-[200px] overflow-y-auto animate__animated animate__fadeInUp animate__delay-4s">
                     <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
                       {fileBytes.slice(0, 500).join(", ")}
                       {fileBytes.length > 500 && " ... [truncated]"}
                     </p>
                   </div>
-                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md">
+                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-5s">
                     <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Decoded text (UTF-8)</p>
                     <p className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all">{bytesToText(fileBytes)}</p>
                   </div>

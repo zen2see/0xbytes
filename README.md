@@ -42,3 +42,16 @@ How to Run
 Use the pnpm command to start the development server:
 ## pnpm dev
 If you want, I can do the local-storage persistence next (page state survives refresh) in one more quick pass.
+
+# NOTES ON GEMINI
+npm install -g @google/gemini-cli
+ OR 
+npx @google/gemini-cli
+
+# CHANGES SO FAR
+UTF-8 text input -> bytes
+Hex text input -> bytes
+file binary input -> bytes
+hex file input -> bytes
+copy bytes / copy hex
+decoded UTF-8 preview from any current byte array
