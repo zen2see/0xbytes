@@ -7,6 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Code, File, Sparkle, ClipboardText, Cube } from "@phosphor-icons/react";
+import { motion } from "framer-motion"; // Import motion
+import { useInView } from 'react-intersection-observer'; // Import useInView for scroll animations
+import { Glass3DButton } from "@/components/ui/glass-cube-button";
+import { Glass3DTitle } from "@/components/ui/glass-title";
 
 export default function ByteConverter() {
   const MAX_BYTES = 10000;
@@ -223,16 +227,17 @@ export default function ByteConverter() {
       )}
       <Card className="w-full max-w-2xl border border-sky-200/60 bg-white/95 dark:bg-slate-900/80 dark:border-sky-800 shadow-xl shadow-sky-300/20 animate__animated animate__fadeIn">
         <CardHeader className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sky-600 dark:text-sky-300">
-              <Sparkle className="h-5 w-5" weight="fill" />
-              <CardTitle className="text-2xl">Byte Converter</CardTitle>
-            </div>
-            <Link href="/encoding-demo" className="flex items-center gap-1 text-sm text-sky-600 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-100 transition-colors">
-              <Cube className="h-4 w-4" weight="fill" />
-              Encoding Demo
-            </Link>
+          <div className="flex justify-center -mb-4">
+             <Sparkle className="h-6 w-6 text-sky-600 dark:text-sky-300 animate-pulse" weight="fill" />
           </div>
+          <div className="flex items-center justify-start gap-4 px-2">
+            <Glass3DTitle />
+            <div className="ml-[-20px] translate-y-1">
+              <Glass3DButton href="/encoding-demo" />
+            </div>
+          </div>
+
+
           <CardDescription className="text-sm text-slate-600 dark:text-slate-300">
             Convert text or files into byte arrays instantly.
           </CardDescription>
@@ -257,22 +262,49 @@ export default function ByteConverter() {
                 </span>
                 <div className="flex items-center gap-2 animate__animated animate__fadeInUp animate__delay-1s">
                   <label className="text-xs">Input mode:</label>
-                  <button onClick={() => handleSetInputMode('text')} className={`rounded px-2 py-1 text-xs ${inputMode === 'text' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
+                  <motion.button // Use motion.button for animation
+                    onClick={() => handleSetInputMode('text')}
+                    className={`rounded px-2 py-1 text-xs ${inputMode === 'text' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}
+                    whileHover={{ scale: 1.05 }} // Hover effect
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
                     UTF-8
-                  </button>
-                  <button onClick={() => handleSetInputMode('hex')} className={`rounded px-2 py-1 text-xs ${inputMode === 'hex' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
+                  </motion.button>
+                  <motion.button // Use motion.button for animation
+                    onClick={() => handleSetInputMode('hex')}
+                    className={`rounded px-2 py-1 text-xs ${inputMode === 'hex' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}
+                    whileHover={{ scale: 1.05 }} // Hover effect
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
                     Hex
-                  </button>
+                  </motion.button>
                 </div>
-                <button onClick={handleCopyBytes} disabled={textBytes.length === 0} className="rounded-lg bg-sky-600 px-3 py-1.5 text-sm text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-sky-300">
+                <motion.button // Use motion.button for animation
+                  onClick={handleCopyBytes}
+                  disabled={textBytes.length === 0}
+                  className="rounded-lg bg-sky-600 px-3 py-1.5 text-sm text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-sky-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   Copy bytes
-                </button>
-                <button onClick={handleCopyHex} disabled={textBytes.length === 0} className="rounded-lg bg-sky-500 px-3 py-1.5 text-sm text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-sky-300">
+                </motion.button>
+                <motion.button // Use motion.button for animation
+                  onClick={handleCopyHex}
+                  disabled={textBytes.length === 0}
+                  className="rounded-lg bg-sky-500 px-3 py-1.5 text-sm text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-sky-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   Copy hex
-                </button>
-                <button onClick={handleClearAll} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                </motion.button>
+                <motion.button // Use motion.button for animation
+                  onClick={handleClearAll}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   Clear all
-                </button>
+                </motion.button>
                 {copyStatus && <span className="text-xs text-emerald-600 dark:text-emerald-300">{copyStatus}</span>}
               </div>
               {textHexError && (
@@ -345,22 +377,49 @@ export default function ByteConverter() {
                 </span>
                 <div className="flex items-center gap-2 animate__animated animate__fadeInUp animate__delay-1s">
                   <label className="text-xs">File mode:</label>
-                  <button onClick={() => setFileMode('binary')} className={`rounded px-2 py-1 text-xs ${fileMode === 'binary' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
+                  <motion.button // Use motion.button for animation
+                    onClick={() => setFileMode('binary')}
+                    className={`rounded px-2 py-1 text-xs ${fileMode === 'binary' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
                     Binary
-                  </button>
-                  <button onClick={() => setFileMode('hex')} className={`rounded px-2 py-1 text-xs ${fileMode === 'hex' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>
+                  </motion.button>
+                  <motion.button // Use motion.button for animation
+                    onClick={() => setFileMode('hex')}
+                    className={`rounded px-2 py-1 text-xs ${fileMode === 'hex' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
                     Hex
-                  </button>
+                  </motion.button>
                 </div>
-                <button onClick={handleCopyBytes} disabled={fileBytes.length === 0} className="rounded-lg bg-sky-600 px-3 py-1.5 text-sm text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-sky-300">
+                <motion.button // Use motion.button for animation
+                  onClick={handleCopyBytes}
+                  disabled={fileBytes.length === 0}
+                  className="rounded-lg bg-sky-600 px-3 py-1.5 text-sm text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-sky-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   Copy bytes
-                </button>
-                <button onClick={handleCopyHex} disabled={fileBytes.length === 0} className="rounded-lg bg-sky-500 px-3 py-1.5 text-sm text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-sky-300">
+                </motion.button>
+                <motion.button // Use motion.button for animation
+                  onClick={handleCopyHex}
+                  disabled={fileBytes.length === 0}
+                  className="rounded-lg bg-sky-500 px-3 py-1.5 text-sm text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-sky-300"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   Copy hex
-                </button>
-                <button onClick={handleClearAll} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                </motion.button>
+                <motion.button // Use motion.button for animation
+                  onClick={handleClearAll}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   Clear all
-                </button>
+                </motion.button>
                 {copyStatus && <span className="text-xs text-emerald-600 dark:text-emerald-300">{copyStatus}</span>}
               </div>
               {fileBytes.length > MAX_BYTES && (
@@ -383,9 +442,46 @@ export default function ByteConverter() {
                       {fileBytes.length > 500 && " ... [truncated]"}
                     </p>
                   </div>
-                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-5s">
-                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Decoded text (UTF-8)</p>
+                  {/* UTF-8/ASCII Output */}
+                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-5s">
+                    <div className="flex items-center gap-2 mb-2 text-slate-700 dark:text-slate-300">
+                      <ClipboardText className="h-4 w-4" />
+                      <span className="text-xs font-semibold">UTF-8/ASCII Output</span>
+                    </div>
                     <p className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all">{bytesToText(fileBytes)}</p>
+                  </div>
+
+                  {/* Binary Output */}
+                  <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-6s">
+                    <div className="flex items-center gap-2 mb-2 text-sky-700 dark:text-sky-200">
+                      <ClipboardText className="h-4 w-4" />
+                      <span className="text-xs font-semibold">Binary Output</span>
+                    </div>
+                    <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
+                      {bytesToBinary(fileBytes)}
+                    </p>
+                  </div>
+
+                  {/* Hexadecimal Output */}
+                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md animate__animated animate__fadeInUp animate__delay-7s">
+                    <div className="flex items-center gap-2 mb-2 text-slate-700 dark:text-slate-300">
+                      <ClipboardText className="h-4 w-4" />
+                      <span className="text-xs font-semibold">Hexadecimal Output</span>
+                    </div>
+                    <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
+                      {bytesToHex(fileBytes)}
+                    </p>
+                  </div>
+
+                  {/* Unicode (Decimal) Output */}
+                  <div className="p-4 bg-sky-50 dark:bg-slate-800 border border-sky-100 dark:border-slate-700 rounded-md overflow-hidden animate__animated animate__fadeInUp animate__delay-8s">
+                    <div className="flex items-center gap-2 mb-2 text-sky-700 dark:text-sky-200">
+                      <ClipboardText className="h-4 w-4" />
+                      <span className="text-xs font-semibold">Unicode (Decimal) Output</span>
+                    </div>
+                    <p className="text-xs font-mono break-all text-slate-700 dark:text-slate-300">
+                      {bytesToUnicodeDecimals(fileBytes)}
+                    </p>
                   </div>
                 </div>
               )}

@@ -63,9 +63,24 @@
     *   The page features dedicated sections for each encoding type with input fields, action buttons (Encode/Decode), and displays for encoded/decoded results and error messages.
     *   Utilizes existing UI components (`Input`, `Button`, `Textarea`, `Card`, etc.) from `@/components/ui/` for a consistent look and feel.
     *   Manages component state for inputs, outputs, and errors for a dynamic user experience.
+    *   **Update**: Fixed syntax error and corruption in `app/encoding-demo/page.tsx`.
+    *   **Update**: Implemented a highly animated "Back to Home" button using `framer-motion`, featuring a `next.svg` image, custom hover/tap effects, and an `ArrowLeft` icon.
+    *   **Update**: Added scroll animations to cards using `framer-motion`'s `whileInView`.
+    *   **Update**: Re-implemented RLP decode functionality.
 
 -   **`app/page.tsx`**:
     *   Modified the main `ByteConverter` page (`app/page.tsx`) to include a new navigation link to the `/encoding-demo` page.
+    *   **Update**: Implemented a **3D Glass Title** for "Byte Converter" using Three.js `Text3D` and `MeshTransmissionMaterial`.
+        *   Matched the title color to the `sky-600` icon, then **inverted** the color scheme (clear glass with blue depth/attenuation) for a more realistic refraction effect.
+        *   Increased heading size and added gentle floating animations.
+    *   **Update**: Refined the **3D Glass Button** for "Encoding Demo":
+        *   Added a warm **yellowish highlight** via a dedicated top spotlight and a **Yellow-300** emissive pulse on hover.
+        *   Re-aligned the button slightly upwards (`translate-y-1`) for a better visual baseline match.
+        *   Maintained size (`0.54`), Zinc-300 color base, and kerning fixes.
+
+    *   **Update**: Enhanced the **3D Glass Title** for "Byte Converter" with **High Contrast**:
+        *   Increased `ior` to `1.6` and `thickness` to `0.8` for a more pronounced 3D refraction.
+        *   Added rainbow chromatic aberration (`0.3`) and deeper bevels for better light catching.
     *   The link is styled to match the existing UI and uses the `Link` component from `next/link` and the `Cube` icon from `@phosphor-icons/react`.
     *   Removed hardcoded background gradient classes, now managed by theming system.
 
@@ -91,3 +106,6 @@
     *   **`components/theme-switcher.tsx`**: Created a UI component (dropdown menu) allowing users to switch between the five implemented themes. It's positioned fixed at the bottom right.
     *   **`app/layout.tsx`**: Integrated the `ThemeProvider` to wrap the entire application and rendered the `ThemeSwitcher` component. Added `suppressHydrationWarning` to the `<html>` tag.
     *   **`app/page.tsx` & `app/encoding-demo/page.tsx`**: Removed all hardcoded background gradient classes, allowing the new theming system to manage their appearance.
+-   **Miscellaneous**:
+    *   Escaped the forward slash '/' character in the className attribute of the Link component in `app/page.tsx` to prevent parser misinterpretation.
+    *   Removed redundant `LOGS.md` file and restored/consolidated the primary `logs.md` from git history.
