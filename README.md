@@ -55,3 +55,97 @@ file binary input -> bytes
 hex file input -> bytes
 copy bytes / copy hex
 decoded UTF-8 preview from any current byte array
+
+# PUT NEW APP ON EXISTING DO CD /home/user
+git clone https://github.com/..
+
+# INSTALL TO DO
+cd /home/mavix/DEV/0xbytes
+# INSTALL NODE
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v
+pnpm -v
+# BUILD
+pnpm install
+pnpm run build
+
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin git@github.com:yourusername/your-repo.git
+git push -u origin main
+# ON DO
+install Node.js
+install npm / pnpm if needed
+install NGINX
+configure firewall to allow HTTP/HTTPS
+sudo apt update
+sudo apt install -y nginx git
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+cd /var/www
+sudo git clone git@github.com:yourusername/your-repo.git 0xbytes
+cd 0xbytes
+
+# ON HOSTING SERVER
+pnpm install         # or pnpm install
+pnpm run build       # if Next.js or build step exists
+pnpm start  
+
+# INSTALL NGINX AND NODE IF NOT ALREADY THERE
+sudo apt install -y nginx git
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# CONFIGURE NGINX AS A REVERSE PROXY
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# ENABLE IT
+sudo ln -s /etc/nginx/sites-available/BYTES /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+# NEXT.JS CONFIG UPDATE
+Because your app is Next.js, set basePath so URLs and assets work correctly under 0xbytes:
+In /home/<user>/0xbytes/next.config.js:
+const nextConfig = {
+  basePath: '/0xbytes',
+};
+module.exports = nextConfig;
+
+# PERMISSIONS
+
+# CLONE AND RUN APP ON SERVER
+cd /var/www
+sudo git clone git@github.com:yourusername/your-repo.git 0xbytes
+cd 0xbytes
+pnpm install        
+pnpm run build       # if Next.js or build step exists
+pnpm start  
+
+# KEEP APP RUNNING WITH PM2
+sudo npm install -g pm2 I FNOT ALREADY INSTALLED
+cd /var/www/0xbytes
+pm2 start npm --name 0xbytes -- start
+pm2 save
+pm2 startup
+
+# SUMMARY FOR A NEW SERVER
+Push /DEV/0xbytes to GitHub.
+Set up Node and NGINX on your DigitalOcean droplet.
+Clone the repo on the server, install dependencies, build, and run.
+Use NGINX reverse proxy to forward traffic to your app.
+Use pm2 or systemd to run it continuously.
