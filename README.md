@@ -101,7 +101,13 @@ sudo apt install -y nodejs
 # CONFIGURE NGINX AS A REVERSE PROXY
 server {
     listen 80;
+    listen [::]:80;  
+
     server_name your-domain.com;
+
+    location = /0xbytes {
+        return 301 /0xbytes/;
+    }
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -114,7 +120,7 @@ server {
 }
 
 # ENABLE IT
-sudo ln -s /etc/nginx/sites-available/BYTES /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/0xbytes /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 
@@ -139,7 +145,7 @@ pnpm start
 # KEEP APP RUNNING WITH PM2
 sudo npm install -g pm2 I FNOT ALREADY INSTALLED
 cd /var/www/0xbytes
-pm2 start npm --name 0xbytes -- start
+pm2 start pnpm --name "0xbytes" -- start
 pm2 save
 pm2 startup
 
@@ -149,3 +155,31 @@ Set up Node and NGINX on your DigitalOcean droplet.
 Clone the repo on the server, install dependencies, build, and run.
 Use NGINX reverse proxy to forward traffic to your app.
 Use pm2 or systemd to run it continuously.
+
+# NVM NOT FOUND, INSTALLED IT
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm --version
+nvm install 20
+nvm use 20
+node -v 
+
+# See all ports with listening services
+lsof -i -P -n | grep LISTEN
+
+# FIX ERROR in nextconfig.ts
+import type { NextConfig } from "next";
+const nextConfig: NextConfig = {
+  turbopack: {
+    root: '/home/deploy/0xbytes',
+  },
+};
+export default nextConfig;
+
+cd /home/deploy/0xbytes
+pnpm run build
+
+pm2 stop 0xbytes
+pmn2 start "pnpm start" --name 0xbytes
+pm2 status
+pm2 logs 0xbytes
