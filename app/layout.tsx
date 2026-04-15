@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeSwitcher } from "@/components/theme-switcher"; // Import ThemeSwitcher
+import { WarningsSuppressor } from "@/components/warnings-suppressor";
 
 const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
@@ -39,6 +40,7 @@ export default function RootLayout({
           defaultTheme="neutral-dark"
           storageKey="vite-ui-theme"
         >
+          <WarningsSuppressor />
           {children}
           <ThemeSwitcher /> {/* Render ThemeSwitcher */}
         </ThemeProvider>
